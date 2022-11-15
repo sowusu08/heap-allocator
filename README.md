@@ -27,20 +27,20 @@ The first two function headers tell `alloc_test.c` (which uses functions and var
 
 Also, notice that `NUM_HEAP_BLOCKS` is defined at the bottom as exactly 8. This means that every time the `allocate_slab()` function is called, 8 blocks will be allocated. More on when `allocate_slab()` should be called and what it is supposed to do below.
 
-In addition, please take a good look at the `blk_header_t` struct. One of these will go before each block allocated. This struct stores the size of the block it's in front, and it stores a pointer to the next block. A diagram of an example set of a 4 allocated blocks in memory, starting at address X, is shown below:
+In addition, please take a good look at the `blk_header_t` struct. One of these will go before each block allocated. This struct stores the size of the block it's in front, and it stores a pointer to the next block header. A diagram of an example set of a 4 allocated blocks in memory, starting at address X, is shown below:
 
 |address|data|
 |:-----:|:---:|
-|X|blk_header_t: [size = 8, next = X+40]|
+|X|blk_header_t: [size = 8, next = X+24]|
 |X + 16|block [8 bytes]|
-|X + 24|blk_header_t [size = 32, next = X+96]|
-|X + 40|block [40 bytes]|
-|X + 80|blk_header_t [size = 16, next = X + 124]|
-|X + 96|block [16 bytes]|
-|X + 112|blk_header_t [size = 64, next = NULL]|
-|X + 124|block [64 bytes]|
+|X + 24|blk_header_t [size = 32, next = X+72]|
+|X + 40|block [32 bytes]|
+|X + 72|blk_header_t [size = 16, next = X + 104]|
+|X + 88|block [16 bytes]|
+|X + 104|blk_header_t [size = 64, next = NULL]|
+|X + 120|block [64 bytes]|
 
-**NOTE:** Since `blk_header_t`'s next field points to the next `block` instead of the next `blk_header_t`, we need to do some pointer arithmetic to access the next `block`'s `blk_header_t` information. Also be mindful to always cast variables to the proper types. Blocks are `void*` and headers are `blk_header_t*`.
+**NOTE:** The `next` field of a `blk_header_t` points to the next `blk_header_t` in the list, so we need to do some pointer arithmetic. Also be mindful to always cast variables to the proper types. Blocks are `void*` and headers are `blk_header_t*`. Also note that the start of a bin points to the block header. 
 
 Hopefully you noticed that the heap is a `void*` array (aka. an array of `void*`s). The tester will access this array to check the linked list of blocks at each array index (or bin). 
 
@@ -73,7 +73,7 @@ Before implementing the functions, please review CS:APP 9.9.14, which describes 
 
 3. `void my_free(void *ptr)`
    - This function will take the pointer to a block (not to its block header!) and insert the block into the front of the appropriate bin. You can tell which bin owns the block by looking at the `blk_header_t` info before the block in memory (Hint: use pointer arithmetic to get the header of that block).
-   - You will have to modify `heap[bin]` and insert the given block (`ptr`) into `heap[bin]`.
+   - You will have to modify `heap[bin]` and insert the given block (`ptr`) into the `heap[bin]`
 
 ---
 
@@ -118,4 +118,3 @@ Below are examples for tests 0 and 2 from the test kit.
 - ***Team specific instructions*** 
   - Teams should only do one submission via group submission.
   - Teams must also edit the file called reflection.txt and include a detailed description of each team member's contributions to the project.
-  
